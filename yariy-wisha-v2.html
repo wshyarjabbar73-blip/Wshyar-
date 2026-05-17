@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>یاری وشە</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Rubik:wght@800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080c14;
+      --surface: #0e1520;
+      --surface2: #141d2e;
+      --border: rgba(255,255,255,0.07);
+      --gold: #f5c842;
+      --gold2: #e8a820;
+      --cyan: #38d9f5;
+      --green: #2ecc71;
+      --orange: #f39c12;
+      --red: #e74c3c;
+      --muted: #4a5568;
+      --text: #e8eaf0;
+      --text2: #8892b0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245,200,66,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 90% 90%, rgba(56,217,245,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse 30% 30% at 10% 80%, rgba(46,204,113,0.04) 0%, transparent 50%);
+      pointer-events:none; z-index:0;
+    }
+
+    /* ── Header ── */
+    header {
+      position:fixed; top:0; left:0; right:0; height:60px;
+      background:rgba(8,12,20,0.92); backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center; z-index:100;
+    }
+    .header-inner {
+      max-width:500px; width:100%; padding:0 20px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .logo { font-family:'Rubik',sans-serif; font-weight:900; font-size:1.4rem; letter-spacing:2px; background:linear-gradient(135deg,var(--gold),var(--gold2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .logo-sub { font-size:0.6rem; color:var(--text2); font-weight:600; letter-spacing:3px; text-transform:uppercase; }
+    .header-right { display:flex; align-items:center; gap:8px; }
+    .hdr-btn {
+      background:none; border:1px solid rgba(245,200,66,0.3); color:var(--gold);
+      padding:6px 12px; border-radius:8px; font-family:'Cairo',sans-serif;
+      font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.2s;
+    }
+    .hdr-btn:hover { background:rgba(245,200,66,0.1); }
+    .hdr-btn.danger { border-color:rgba(231,76,60,0.3); color:var(--red); }
+    .hdr-btn.danger:hover { background:rgba(231,76,60,0.1); }
+    #hdrUser { font-size:0.8rem; color:var(--text2); font-weight:600; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* ── Main ── */
+    main { position:relative; z-index:1; padding-top:80px; padding-bottom:40px; min-height:100vh; display:flex; align-items:flex-start; justify-content:center; }
+    .container { max-width:480px; width:100%; padding:20px; }
+
+    /* ── Screens ── */
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.35s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Card ── */
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:32px 28px; margin-bottom:16px; }
+    .card-label { font-size:0.7rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .card-label::before { content:''; display:inline-block; width:24px; height:2px; background:var(--gold); border-radius:2px; }
+    .card-title { font-size:1.7rem; font-weight:900; color:var(--text); line-height:1.2; margin-bottom:6px; }
+    .card-desc { font-size:0.88rem; color:var(--text2); line-height:1.6; }
+
+    /* ── Tabs (sign in / sign up) ── */
+    .tabs { display:flex; gap:0; border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:24px; }
+    .tab-btn { flex:1; padding:11px; background:transparent; border:none; color:var(--text2); font-family:'Cairo',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+    .tab-btn.active { background:rgba(245,200,66,0.12); color:var(--gold); }
+
+    /* ── Fields ── */
+    .field { margin-bottom:14px; }
+    .field-label { font-size:0.72rem; font-weight:700; letter-spacing:2px; color:var(--text2); text-transform:uppercase; margin-bottom:6px; }
+    input.txt {
+      width:100%; padding:13px 16px;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:10px; color:var(--text);
+      font-family:'Cairo',sans-serif; font-size:1rem; font-weight:600;
+      text-align:right; outline:none; transition:all 0.2s; direction:rtl;
+    }
+    input.txt:focus { border-color:rgba(245,200,66,0.5); box-shadow:0 0 0 3px rgba(245,200,66,0.08); }
+    input.txt::placeholder { color:var(--muted); }
+    .field-err { font-size:0.78rem; color:var(--red); margin-top:5px; display:none; }
+    .field-err.show { display:block; }
+
+    /* ── Buttons ── */
+    .btn { width:100%; padding:14px 24px; border:none; border-radius:12px; font-family:'Cairo',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#080c14; margin-top:6px; box-shadow:0 4px 20px rgba(245,200,66,0.2); }
+    .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(245,200,66,0.35); }
+    .btn-gold:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); margin-top:10px; font-size:0.9rem; }
+    .btn-ghost:hover { background:var(--surface); color:var(--text); border-color:rgba(255,255,255,0.15); }
+
+    /* ── Level cards ── */
+    .levels { display:grid; gap:12px; margin-top:18px; }
+    .level-card { background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:20px 24px; cursor:pointer; transition:all 0.25s; display:flex; align-items:center; justify-content:space-between; }
+    .level-card:hover { border-color:rgba(245,200,66,0.4); background:rgba(245,200,66,0.04); transform:translateX(-4px); }
+    .level-card.hard:hover { border-color:rgba(231,76,60,0.4); background:rgba(231,76,60,0.04); }
+    .level-name { font-size:1.2rem; font-weight:900; }
+    .level-sub { font-size:0.82rem; color:var(--text2); margin-top:3px; }
+    .level-tag { font-size:0.68rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:4px 10px; border-radius:6px; }
+    .tag-easy { background:rgba(46,204,113,0.15); color:var(--green); }
+    .tag-hard { background:rgba(231,76,60,0.15); color:var(--red); }
+
+    /* ── Game ── */
+    .game-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    .player-badge { display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700; }
+    .player-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); }
+    .score-badge { background:var(--surface); border:1px solid rgba(245,200,66,0.25); border-radius:10px; padding:8px 14px; font-size:0.82rem; font-weight:700; color:var(--gold); }
+    .score-badge span { font-size:1.1rem; font-weight:900; }
+
+    .word-grid { display:flex; flex-direction:column; gap:8px; align-items:center; margin-bottom:20px; }
+    .word-row { display:flex; gap:8px; }
+    .letter-box {
+      width:52px; height:52px; border:1.5px solid rgba(255,255,255,0.1); border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.5rem; font-weight:900; background:var(--surface2); transition:all 0.3s;
+    }
+    .letter-box.correct { background:rgba(46,204,113,0.18); border-color:var(--green); color:var(--green); box-shadow:0 0 14px rgba(46,204,113,0.2); }
+    .letter-box.present { background:rgba(243,156,18,0.18); border-color:var(--orange); color:var(--orange); box-shadow:0 0 14px rgba(243,156,18,0.2); }
+    .letter-box.absent { background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.06); color:var(--muted); }
+    @keyframes flip { 0%{transform:scaleY(1)} 50%{transform:scaleY(0)} 100%{transform:scaleY(1)} }
+    .letter-box.flipping { animation:flip 0.4s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .word-row.shake { animation:shake 0.4s ease; }
+
+    /* Score pop animation */
+    @keyframes scorePop { 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
+    .score-pop { animation:scorePop 0.35s ease; }
+
+    .guess-area { display:flex; gap:10px; margin-bottom:12px; }
+    input.guess-input {
+      flex:1; padding:14px 16px;
+      background:var(--surface); border:1.5px solid rgba(56,217,245,0.3);
+      border-radius:12px; color:var(--text);
+      font-family:'Cairo',sans-serif; font-size:1.2rem; font-weight:700;
+      text-align:center; letter-spacing:3px; outline:none; transition:all 0.2s;
+    }
+    input.guess-input:focus { border-color:var(--cyan); box-shadow:0 0 0 3px rgba(56,217,245,0.1); }
+    input.guess-input::placeholder { color:var(--muted); font-size:0.88rem; letter-spacing:1px; }
+    .submit-btn {
+      padding:14px 20px; background:linear-gradient(135deg,var(--cyan),#0099cc); color:#080c14;
+      border:none; border-radius:12px; font-family:'Cairo',sans-serif; font-size:0.9rem; font-weight:900;
+      cursor:pointer; transition:all 0.2s; white-space:nowrap; box-shadow:0 4px 14px rgba(56,217,245,0.2);
+    }
+    .submit-btn:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(56,217,245,0.35); }
+    .submit-btn:active { transform:scale(0.97); }
+
+    .hint-bar { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px; }
+    .hint-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); transition:background 0.3s; }
+    .hint-dot.active { background:var(--gold); box-shadow:0 0 5px var(--gold); }
+
+    /* ── Result ── */
+    .result-hero { text-align:center; padding:36px 28px 24px; }
+    .result-emoji { font-size:3.5rem; display:block; margin-bottom:14px; }
+    .result-title { font-size:1.9rem; font-weight:900; margin-bottom:6px; }
+    .result-subtitle { font-size:0.88rem; color:var(--text2); }
+    .result-word-display { display:flex; justify-content:center; gap:7px; margin:20px 0; flex-wrap:wrap; }
+    .result-letter { width:42px; height:42px; background:rgba(245,200,66,0.1); border:1.5px solid rgba(245,200,66,0.4); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:900; color:var(--gold); }
+    .stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:18px 0; }
+    .stat-box { background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:14px; text-align:center; }
+    .stat-val { font-size:1.9rem; font-weight:900; color:var(--cyan); }
+    .stat-lbl { font-size:0.72rem; color:var(--text2); font-weight:600; letter-spacing:1px; margin-top:3px; }
+    .result-btns { display:flex; gap:10px; }
+
+    /* ── Leaderboard ── */
+    .lb-list { display:flex; flex-direction:column; gap:8px; max-height:55vh; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+    .lb-item { display:flex; align-items:center; gap:14px; padding:13px 18px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; transition:all 0.2s; }
+    .lb-item.top1 { border-color:rgba(245,200,66,0.4); background:rgba(245,200,66,0.05); }
+    .lb-item.top2 { border-color:rgba(192,192,192,0.3); }
+    .lb-item.top3 { border-color:rgba(205,127,50,0.3); }
+    .lb-rank { width:32px; text-align:center; font-size:1.1rem; font-weight:900; }
+    .lb-name { flex:1; font-weight:700; font-size:0.92rem; }
+    .lb-score { font-weight:900; font-size:1.05rem; color:var(--cyan); }
+    .lb-empty { text-align:center; padding:40px; color:var(--text2); font-size:0.9rem; }
+
+    /* ── Toast ── */
+    .toast { position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 20px; font-size:0.85rem; font-weight:700; color:var(--text); z-index:200; opacity:0; transition:all 0.25s; white-space:nowrap; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ── Score gain float ── */
+    .score-gain { position:fixed; left:50%; transform:translateX(-50%); top:70px; font-size:1.2rem; font-weight:900; pointer-events:none; z-index:300; opacity:0; transition:all 0.6s; }
+    .score-gain.show { opacity:1; top:100px; }
+    .score-gain.green { color:var(--green); }
+    .score-gain.yellow { color:var(--orange); }
+
+    @media(max-width:420px){
+      .letter-box{width:42px;height:42px;font-size:1.15rem;}
+      .stats-row{grid-template-columns:1fr 1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="score-gain" id="scoreGain"></div>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo">وشە</div>
+      <div class="logo-sub">یاری کوردی</div>
+    </div>
+    <div class="header-right">
+      <span id="hdrUser" style="display:none"></span>
+      <button class="hdr-btn" id="hdrLbBtn" onclick="showLeaderboard()" style="display:none">🏆 بەرزترین</button>
+      <button class="hdr-btn danger" id="hdrSignoutBtn" onclick="signOut()" style="display:none">دەرچوون</button>
+    </div>
+  </div>
+</header>
+
+<main><div class="container">
+
+  <!-- Screen: Auth -->
+  <div class="screen active" id="screenAuth">
+    <div class="card">
+      <div class="card-label">خێرهاتیت</div>
+      <div class="card-title">یاری وشە 🔤</div>
+      <div class="card-desc" style="margin-bottom:20px;">پیتەکان بدۆزەوە، خاڵ کۆبکەرەوە!</div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tabSignin" onclick="switchTab('signin')">چوونەژوورەوە</button>
+        <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">تۆمارکردن</button>
+      </div>
+
+      <!-- Sign In -->
+      <div id="formSignin">
+        <div class="field">
+          <div class="field-label">ئیمەیڵ</div>
+          <input type="email" class="txt" id="siEmail" placeholder="email@example.com" dir="ltr" style="text-align:left">
+          <div class="field-err" id="siEmailErr"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">پاسوەرد</div>
+          <input type="password" class="txt" id="siPass" placeholder="••••••••" dir="ltr" style="text-align:left">
+          <div class="field-err" id="siPassErr"></div>
+        </div>
+        <div class="field-err" id="siGenErr" style="margin-top:6px;font-size:0.85rem;"></div>
+        <button class="btn btn-gold" id="siBtn" onclick="doSignIn()">چوونەژوورەوە ←</button>
+      </div>
+
+      <!-- Sign Up -->
+      <div id="formSignup" style="display:none">
+        <div class="field">
+          <div class="field-label">ناو</div>
+          <input type="text" class="txt" id="suName" placeholder="ناوی یاریزان" maxlength="20">
+          <div class="field-err" id="suNameErr"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">ئیمەیڵ</div>
+          <input type="email" class="txt" id="suEmail" placeholder="email@example.com" dir="ltr" style="text-align:left">
+          <div class="field-err" id="suEmailErr"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">پاسوەرد</div>
+          <input type="password" class="txt" id="suPass" placeholder="کەمی ٦ پیت" dir="ltr" style="text-align:left">
+          <div class="field-err" id="suPassErr"></div>
+        </div>
+        <div class="field-err" id="suGenErr" style="margin-top:6px;font-size:0.85rem;"></div>
+        <button class="btn btn-gold" id="suBtn" onclick="doSignUp()">تۆمارکردن ←</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen: Levels -->
+  <div class="screen" id="screenLevels">
+    <div class="card">
+      <div class="card-label">هەڵبژاردن</div>
+      <div class="card-title">ئاست هەڵبژێرە</div>
+      <div class="card-desc">هەر قورستر بێت، خاڵی زیاتر دەگریتەوە</div>
+      <div class="levels">
+        <div class="level-card" onclick="startGame(3)">
+          <div>
+            <div class="level-name">٣ پیت</div>
+            <div class="level-sub">🟡 ١ خاڵ &nbsp; 🟢 ٢ خاڵ</div>
+          </div>
+          <span class="level-tag tag-easy">ئاسان</span>
+        </div>
+        <div class="level-card hard" onclick="startGame(8)">
+          <div>
+            <div class="level-name">٨ پیت</div>
+            <div class="level-sub">🟡 ١ خاڵ &nbsp; 🟢 ٢ خاڵ</div>
+          </div>
+          <span class="level-tag tag-hard">قورس</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="showLeaderboard()">🏆 بەرزترینەکان</button>
+  </div>
+
+  <!-- Screen: Game -->
+  <div class="screen" id="screenGame">
+    <div class="game-top">
+      <div class="player-badge">
+        <div class="player-dot"></div>
+        <span id="playerDisplay">—</span>
+      </div>
+      <div class="score-badge">خاڵ: <span id="sessionScore">٠</span></div>
+    </div>
+    <div class="word-grid" id="wordGrid"></div>
+    <div class="guess-area">
+      <input type="text" class="guess-input" id="guessInput" placeholder="وشەکەت بنووسە" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="submit-btn" onclick="submitGuess()">داگرتن</button>
+    </div>
+    <div class="hint-bar" id="hintBar"></div>
+    <button class="btn btn-ghost" style="margin-top:18px;" onclick="quitGame()">← جێبهێڵ</button>
+  </div>
+
+  <!-- Screen: Result -->
+  <div class="screen" id="screenResult">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="result-hero">
+        <span class="result-emoji" id="resultEmoji">🎉</span>
+        <div class="result-title" id="resultTitle">بەختەوەر بوویت!</div>
+        <div class="result-subtitle" id="resultSubtitle">وشەکە دۆزیتەوە</div>
+      </div>
+      <div style="padding:0 28px 28px;">
+        <div style="font-size:0.68rem;color:var(--text2);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:8px;">وشەکە</div>
+        <div class="result-word-display" id="resultWordDisplay"></div>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-val" id="statAttempts">—</div>
+            <div class="stat-lbl">هەوڵ</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="statRoundScore" style="color:var(--gold);">—</div>
+            <div class="stat-lbl">ئەم یاریە</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="statTotalScore" style="color:var(--cyan);">—</div>
+            <div class="stat-lbl">کۆی خاڵ</div>
+          </div>
+        </div>
+        <div class="result-btns">
+          <button class="btn btn-gold" style="flex:1;margin-top:0;" onclick="backToLevels()">یاری نوێ</button>
+          <button class="btn btn-ghost" style="flex:1;margin-top:0;border-color:rgba(245,200,66,0.2);" onclick="showLeaderboard()">🏆 لیست</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen: Leaderboard -->
+  <div class="screen" id="screenLB">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div style="font-size:1.2rem;font-weight:900;">🏆 بەرزترینەکان</div>
+        <div style="font-size:0.75rem;color:var(--text2);">کۆی خاڵ</div>
+      </div>
+      <div class="lb-list" id="lbList"><div class="lb-empty">بارکردن...</div></div>
+    </div>
+    <button class="btn btn-ghost" onclick="lbGoBack()">← گەڕانەوە</button>
+  </div>
+
+</div></main>
+
+<script>
+// ─────────── Config ───────────
+const SB_URL = 'https://vxdlqtqtllodlbrvprnf.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4ZGxxdHF0bGxvZGxicnZwcm5mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODAwMjUsImV4cCI6MjA5NDQ1NjAyNX0.Z69bheEZYrZJcEyq7cNHzHNYdwP7ue1yTkAzw-UaThk';
+const hdrs = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+const hdrsAuth = (token) => ({ ...hdrs, 'Authorization': `Bearer ${token}` });
+
+// ─────────── Word lists ───────────
+const words3 = ['باخ','بان','باز','باڵ','بۆر','پار','پاک','پەل','تەم','تاج','تاڵ','تۆپ','تیر','چاڵ','چاک','چۆن','خاڵ','خەم','دار','دەم','دوو','ڕەش','ڕۆژ','زار','زەم','زۆر','زین','ساڵ','سام','سپی','سور','شاخ','شین','شێر','قاز','کار','کاڵ','کێو','گاز','گۆڵ','لار','مار','مێش','ناو','هار','یار','ئاو','پیر','تەق','چێژ','خۆر','داو','ژان','ژین','سەر','شەو','کات','گەش','مەڕ','هات','یەک','ئاش','بێڵ','تەڕ','گێل','خاو','خول','ڕان','ساز','شاد','گول','لاو','ماچ','ژیر','ساف','قاپ','لێو','چۆک','ڕۆن','شەم','گۆڕ','مەر','کچ','فیل','گەل','هێز','زێڕ','ڕێز'];
+const words8 = ['پێشکەوتن','کارگێڕیی','ئامادەیی','بەردەوام','شارەوانی','پەیوەندی','زانیاریی','کۆنفرانس','پەروەردە','پیشەسازی','بەڕێوبەر','کۆبونەوە','دامەزران','کۆمپانیا','دەزگاکان','خوێندکار'];
+
+// ─────────── State ───────────
+let currentUser = null;  // { id, email, name, token, total_score }
+let currentLevel = 3, targetWord = '', currentRow = 0, gameOver = false;
+let sessionScore = 0;  // score this session (before save)
+let lbFrom = 'screenLevels';
+const MAX = 6;
+
+// ─────────── Utils ───────────
+function toKu(n) { return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(msg, ms=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+function floatScore(pts, type) {
+  const el = document.getElementById('scoreGain');
+  el.textContent = `+${toKu(pts)} خاڵ`;
+  el.className = `score-gain ${type}`;
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); }, 700);
+}
+
+// ─────────── Header ───────────
+function updateHeader() {
+  if (currentUser) {
+    document.getElementById('hdrUser').textContent = currentUser.name || currentUser.email;
+    document.getElementById('hdrUser').style.display = 'block';
+    document.getElementById('hdrLbBtn').style.display = 'block';
+    document.getElementById('hdrSignoutBtn').style.display = 'block';
+  } else {
+    document.getElementById('hdrUser').style.display = 'none';
+    document.getElementById('hdrLbBtn').style.display = 'none';
+    document.getElementById('hdrSignoutBtn').style.display = 'none';
+  }
+}
+
+// ─────────── Auth Tab ───────────
+function switchTab(tab) {
+  const isSI = tab === 'signin';
+  document.getElementById('tabSignin').classList.toggle('active', isSI);
+  document.getElementById('tabSignup').classList.toggle('active', !isSI);
+  document.getElementById('formSignin').style.display = isSI ? 'block' : 'none';
+  document.getElementById('formSignup').style.display = isSI ? 'none' : 'block';
+  clearErrors();
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field-err').forEach(e => { e.style.display='none'; e.textContent=''; e.classList.remove('show'); });
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.classList.add('show');
+}
+
+// ─────────── Sign Up ───────────
+async function doSignUp() {
+  clearErrors();
+  const name  = document.getElementById('suName').value.trim();
+  const email = document.getElementById('suEmail').value.trim();
+  const pass  = document.getElementById('suPass').value;
+  let ok = true;
+  if (!name)         { showErr('suNameErr','تکایە ناوێک بنووسە'); ok=false; }
+  if (!email || !email.includes('@')) { showErr('suEmailErr','ئیمەیڵی دروست بنووسە'); ok=false; }
+  if (pass.length < 6) { showErr('suPassErr','پاسوەردەکە کەمی ٦ پیت بێت'); ok=false; }
+  if (!ok) return;
+
+  const btn = document.getElementById('suBtn');
+  btn.disabled = true; btn.textContent = '...';
+
+  try {
+    // 1) Create auth user
+    const res = await fetch(`${SB_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+
+    // Handle Supabase errors
+    if (data.error || data.msg) {
+      const msg = data.error?.message || data.msg || 'کێشەیەک ڕووی دا';
+      showErr('suGenErr', msg.includes('already registered') ? 'ئەم ئیمەیڵە پێشتر تۆمارکراوە، چوونەژوورەوە بکە' : msg);
+      btn.disabled=false; btn.textContent='تۆمارکردن ←';
+      return;
+    }
+
+    // 2) Auto sign-in (works whether email confirm is on or off)
+    const siRes = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const siData = await siRes.json();
+
+    if (siData.error || !siData.access_token) {
+      // Signup worked but email confirm required — tell user
+      showErr('suGenErr', '✅ هەژمارەکەت دروست کرا! تکایە ئیمەیڵەکەت پشتراست بکە پاشان چوونەژوورەوە بکە.');
+      btn.disabled=false; btn.textContent='تۆمارکردن ←';
+      return;
+    }
+
+    const token = siData.access_token;
+    const uid   = siData.user?.id || data.user?.id;
+
+    // 3) Save profile (ignore duplicate error)
+    await fetch(`${SB_URL}/rest/v1/kurd`, {
+      method: 'POST',
+      headers: { ...hdrs, 'Authorization': `Bearer ${token}`, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ id: uid, name, email, score: 0 })
+    }).catch(()=>{});
+
+    currentUser = { id: uid, email, name, token, total_score: 0 };
+    updateHeader();
+    showScreen('screenLevels');
+    toast(`خێرهاتیت ${name}! 🎉`);
+  } catch(e) {
+    showErr('suGenErr','کێشەیەک ڕووی دا: ' + e.message);
+  }
+  btn.disabled=false; btn.textContent='تۆمارکردن ←';
+}
+
+// ─────────── Sign In ───────────
+async function doSignIn() {
+  clearErrors();
+  const email = document.getElementById('siEmail').value.trim();
+  const pass  = document.getElementById('siPass').value;
+  let ok = true;
+  if (!email || !email.includes('@')) { showErr('siEmailErr','ئیمەیڵی دروست بنووسە'); ok=false; }
+  if (!pass)  { showErr('siPassErr','پاسوەردەکە بنووسە'); ok=false; }
+  if (!ok) return;
+
+  const btn = document.getElementById('siBtn');
+  btn.disabled=true; btn.textContent='...';
+
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (data.error) { showErr('siGenErr', data.error.message || 'ئیمەیڵ یان پاسوەرد هەڵەیە'); btn.disabled=false; btn.textContent='چوونەژوورەوە ←'; return; }
+
+    const token = data.access_token;
+    const uid   = data.user?.id;
+
+    // Fetch profile
+    const pr = await fetch(`${SB_URL}/rest/v1/kurd?id=eq.${uid}&select=name,score`, { headers: hdrsAuth(token) });
+    const profile = await pr.json();
+    const name  = profile[0]?.name || email.split('@')[0];
+    const total = profile[0]?.score || 0;
+
+    currentUser = { id: uid, email, name, token, total_score: total };
+    updateHeader();
+    showScreen('screenLevels');
+    toast(`خێرهاتیتەوە ${name}! 👋`);
+  } catch(e) {
+    showErr('siGenErr','کێشەیەک ڕووی دا: ' + e.message);
+  }
+  btn.disabled=false; btn.textContent='چوونەژوورەوە ←';
+}
+
+// ─────────── Sign Out ───────────
+async function signOut() {
+  try {
+    await fetch(`${SB_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${currentUser?.token}` }
+    });
+  } catch(e) {}
+  currentUser = null;
+  sessionScore = 0;
+  updateHeader();
+  showScreen('screenAuth');
+  toast('دەرچووتەوە');
+}
+
+// ─────────── Game ───────────
+function backToLevels() { showScreen('screenLevels'); }
+function quitGame()     { showScreen('screenLevels'); }
+
+function startGame(level) {
+  currentLevel = level;
+  const list = level === 3 ? words3 : words8;
+  targetWord = list[Math.floor(Math.random() * list.length)];
+  currentRow = 0; gameOver = false; sessionScore = 0;
+  document.getElementById('playerDisplay').textContent = currentUser.name;
+  document.getElementById('sessionScore').textContent = toKu(0);
+  buildGrid(); buildHints();
+  showScreen('screenGame');
+  setTimeout(() => document.getElementById('guessInput').focus(), 300);
+}
+
+function buildGrid() {
+  const grid = document.getElementById('wordGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < MAX; i++) {
+    const row = document.createElement('div');
+    row.className = 'word-row'; row.id = `row-${i}`;
+    for (let j = 0; j < currentLevel; j++) {
+      const box = document.createElement('div');
+      box.className = 'letter-box'; box.id = `box-${i}-${j}`;
+      if (currentLevel === 8) { box.style.cssText='width:40px;height:40px;font-size:1.05rem;'; }
+      row.appendChild(box);
+    }
+    grid.appendChild(row);
+  }
+}
+
+function buildHints() {
+  const bar = document.getElementById('hintBar');
+  bar.innerHTML = '';
+  for (let i = 0; i < MAX; i++) {
+    const d = document.createElement('div');
+    d.className = 'hint-dot active'; d.id = `dot-${i}`;
+    bar.appendChild(d);
+  }
+}
+
+function submitGuess() {
+  if (gameOver) return;
+  const input = document.getElementById('guessInput');
+  const guess = input.value.trim();
+  if (guess.length !== currentLevel) {
+    toast(`تکایە ${toKu(currentLevel)} پیت بنووسە`);
+    document.getElementById(`row-${currentRow}`).classList.add('shake');
+    setTimeout(() => document.getElementById(`row-${currentRow}`).classList.remove('shake'), 400);
+    return;
+  }
+  revealGuess(guess);
+}
+
+function revealGuess(guess) {
+  const target = targetWord.split('');
+  const guessArr = guess.split('');
+  const states = Array(currentLevel).fill('absent');
+  const counts = {};
+  target.forEach(l => counts[l] = (counts[l]||0)+1);
+  // Correct
+  for (let i=0;i<currentLevel;i++) {
+    if (guessArr[i]===target[i]) { states[i]='correct'; counts[guessArr[i]]--; }
+  }
+  // Present
+  for (let i=0;i<currentLevel;i++) {
+    if (states[i]==='absent' && counts[guessArr[i]]>0) { states[i]='present'; counts[guessArr[i]]--; }
+  }
+
+  // Count score for this guess
+  let gained = 0;
+  states.forEach(s => { if(s==='correct') gained+=2; else if(s==='present') gained+=1; });
+
+  // Animate
+  for (let i=0;i<currentLevel;i++) {
+    setTimeout(() => {
+      const box = document.getElementById(`box-${currentRow}-${i}`);
+      box.classList.add('flipping');
+      setTimeout(() => {
+        box.textContent = guessArr[i];
+        box.classList.remove('flipping');
+        box.classList.add(states[i]);
+      }, 200);
+    }, i*80);
+  }
+
+  const delay = currentLevel*80 + 320;
+  setTimeout(() => {
+    // Add score
+    if (gained > 0) {
+      sessionScore += gained;
+      document.getElementById('sessionScore').textContent = toKu(sessionScore);
+      const hasGreen = states.includes('correct');
+      floatScore(gained, hasGreen ? 'green' : 'yellow');
+      // animate badge
+      const badge = document.getElementById('sessionScore');
+      badge.classList.add('score-pop');
+      setTimeout(() => badge.classList.remove('score-pop'), 350);
+    }
+
+    const won = guess === targetWord;
+    if (won) {
+      gameOver = true;
+      setTimeout(() => endGame(true), 300);
+    } else {
+      const dot = document.getElementById(`dot-${currentRow}`);
+      if (dot) dot.classList.remove('active');
+      currentRow++;
+      if (currentRow === MAX) {
+        gameOver = true;
+        setTimeout(() => endGame(false), 300);
+      } else {
+        document.getElementById('guessInput').value = '';
+        document.getElementById('guessInput').focus();
+      }
+    }
+  }, delay);
+}
+
+async function endGame(won) {
+  // Build result word display
+  const disp = document.getElementById('resultWordDisplay');
+  disp.innerHTML = '';
+  targetWord.split('').forEach(l => {
+    const el = document.createElement('div');
+    el.className = 'result-letter'; el.textContent = l;
+    disp.appendChild(el);
+  });
+
+  // Save cumulative score
+  const newTotal = (currentUser.total_score||0) + sessionScore;
+  currentUser.total_score = newTotal;
+  await saveScore(sessionScore);
+
+  document.getElementById('resultEmoji').textContent = won ? '🎉' : '😔';
+  document.getElementById('resultTitle').textContent = won ? 'بەختەوەر بوویت!' : 'هەوڵی دیکە!';
+  document.getElementById('resultTitle').style.color = won ? 'var(--green)' : 'var(--red)';
+  document.getElementById('resultSubtitle').textContent = won ? 'وشەکە دۆزیتەوە ✓' : 'وشەکەت نەدۆزیەوە';
+  document.getElementById('statAttempts').textContent = toKu(currentRow+1);
+  document.getElementById('statRoundScore').textContent = toKu(sessionScore);
+  document.getElementById('statTotalScore').textContent = toKu(newTotal);
+
+  showScreen('screenResult');
+}
+
+// Cumulative score: add this round's score to DB total
+async function saveScore(roundScore) {
+  if (!currentUser || roundScore === 0) return;
+  try {
+    // Fetch current total from DB
+    const r = await fetch(`${SB_URL}/rest/v1/kurd?id=eq.${currentUser.id}&select=score`, {
+      headers: hdrsAuth(currentUser.token)
+    });
+    const rows = await r.json();
+    const oldScore = rows[0]?.score || 0;
+    const newScore = oldScore + roundScore;
+
+    await fetch(`${SB_URL}/rest/v1/kurd?id=eq.${currentUser.id}`, {
+      method: 'PATCH',
+      headers: { ...hdrs, 'Authorization': `Bearer ${currentUser.token}`, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ score: newScore })
+    });
+    currentUser.total_score = newScore;
+  } catch(e) { console.error(e); }
+}
+
+// ─────────── Leaderboard ───────────
+function showLeaderboard() {
+  lbFrom = document.querySelector('.screen.active')?.id || 'screenLevels';
+  showScreen('screenLB');
+  loadLeaderboard();
+}
+function lbGoBack() { showScreen(lbFrom); }
+
+async function loadLeaderboard() {
+  const list = document.getElementById('lbList');
+  list.innerHTML = '<div class="lb-empty">بارکردن...</div>';
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/kurd?select=name,score&order=score.desc&limit=20`, { headers: hdrs });
+    const data = await r.json();
+    if (!data?.length) { list.innerHTML = '<div class="lb-empty">هێشتا کەس یاری نەکردووە</div>'; return; }
+    const medals = ['🥇','🥈','🥉'];
+    const topCls = ['top1','top2','top3'];
+    list.innerHTML = '';
+    data.forEach((e,i) => {
+      const item = document.createElement('div');
+      item.className = `lb-item ${topCls[i]||''}`;
+      // Highlight current user
+      if (currentUser && e.name === currentUser.name) item.style.borderColor='rgba(56,217,245,0.4)';
+      item.innerHTML = `
+        <div class="lb-rank">${i<3?medals[i]:toKu(i+1)}</div>
+        <div class="lb-name">${e.name}</div>
+        <div class="lb-score">${toKu(e.score)}</div>`;
+      list.appendChild(item);
+    });
+  } catch(e) {
+    list.innerHTML = '<div class="lb-empty">کێشەیەک ڕووی دا</div>';
+  }
+}
+
+// ─────────── Keyboard ───────────
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter') {
+    if (document.getElementById('formSignin').style.display!=='none' && document.getElementById('screenAuth').classList.contains('active')) doSignIn();
+    else if (document.getElementById('formSignup').style.display!=='none' && document.getElementById('screenAuth').classList.contains('active')) doSignUp();
+    else if (document.getElementById('screenGame').classList.contains('active')) submitGuess();
+  }
+});
+</script>
+</body>
+</html>
